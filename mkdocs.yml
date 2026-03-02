@@ -1,0 +1,88 @@
+site_name: SHACL-Based Ontology Design Methodology
+site_description: >-
+  A Practitioner's Methodology for SHACL-Based Ontology Design —
+  An Iterative, Governance-First Framework. Version 2.0, aligned with SHACL 1.2.
+site_author: Kurt Cagle
+site_url: https://kurtcagle.github.io/shacl-methodology/
+
+repo_url: https://github.com/kurtcagle/shacl-methodology
+repo_name: kurtcagle/shacl-methodology
+
+docs_dir: docs
+site_dir: site
+
+nav:
+  - Home: README.md
+  - Methodology: shacl_methodology_v2.md
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: blue
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: blue
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  font:
+    text: Roboto
+    code: Roboto Mono
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.tracking
+    - navigation.indexes
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - toc.follow
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      toc_depth: 3
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+plugins:
+  - search
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/kurtcagle
+      name: Kurt Cagle on GitHub
+
+copyright: >
+  Copyright &copy; 2026 Kurt Cagle —
+  <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>
