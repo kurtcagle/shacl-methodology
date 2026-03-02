@@ -1,0 +1,33 @@
+---
+title: Abstract Shape Composition Patterns (Phase 5)
+---
+graph TB
+    classDef abstract fill:#1F4E79,color:#fff,stroke:#1F4E79,font-weight:bold
+    classDef concrete fill:#2E75B6,color:#fff,stroke:#2E75B6
+    classDef reifier fill:#E05A00,color:#fff,stroke:#E05A00
+    classDef notebox fill:#EEF4F9,color:#1A1A1A,stroke:#BDD7EE,stroke-dasharray:4 2
+
+    ANES["AbstractNamedEntityShape\n─────────────────────\nid  minCount 1  xsd:string\nlabel  minCount 1  sh:languageIn\ndescription  maxCount 1\n─────────────────────\nNo sh:targetClass"]:::abstract
+
+    APS["AbstractProvenanceShape\n─────────────────────\ncreatedDate  minCount 1\nmodifiedDate  maxCount 1\ncreatedBy  sh:nodeKind sh:IRI\n─────────────────────\nNo sh:targetClass"]:::abstract
+
+    ARS["AbstractRelationshipShape\n─────────────────────\nstartDate  minCount 1\nendDate  maxCount 1\nstatus  sh:class StatusConcept\n─────────────────────\nNo sh:targetClass"]:::abstract
+
+    PS["PersonShape\n─────────────────────\ntargetClass: ex:Person\nemail  minCount 1  sh:pattern\nphone  maxCount 3\n─────────────────────\nplus all from sh:and refs"]:::concrete
+
+    OS["OrganisationShape\n─────────────────────\ntargetClass: ex:Organisation\nlegalName  minCount 1\njurisdiction  sh:class\n─────────────────────\nplus all from sh:and refs"]:::concrete
+
+    EAS["EmploymentAnnotationShape\n─────────────────────\nsh:reifierShape for ex:employedBy\nrole  minCount 1  sh:class\ncontractType  sh:class\n─────────────────────\nplus all from sh:and refs"]:::reifier
+
+    NOTE1["sh:and is compositional\nnot inferential\n\nPersonShape must also conform\nto AbstractNamedEntityShape.\nNo OWL-style inheritance."]:::notebox
+
+    NOTE2["Applied via sh:reifierShape\non ex:employedBy property.\nRequires SHACL 1.2.\nsh:reificationRequired false\nduring early design."]:::notebox
+
+    ANES -->|"sh:and"| PS
+    APS  -->|"sh:and"| PS
+    ANES -->|"sh:and"| OS
+    APS  -->|"sh:and"| OS
+    ARS  -->|"sh:and"| EAS
+
+    NOTE1 -.-> PS
+    NOTE2 -.-> EAS

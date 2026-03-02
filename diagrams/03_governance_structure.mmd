@@ -1,0 +1,46 @@
+---
+title: SHACL Governance Structure
+---
+graph TB
+    classDef owner fill:#1F4E79,color:#fff,stroke:#1F4E79,font-weight:bold
+    classDef steward fill:#2E75B6,color:#fff,stroke:#2E75B6
+    classDef artefact fill:#D6E4F0,color:#1A1A1A,stroke:#2E75B6
+    classDef policy fill:#BDD7EE,color:#1A1A1A,stroke:#2E75B6
+    classDef shacl fill:#EEF4F9,color:#1A1A1A,stroke:#404040,stroke-dasharray:4 2
+
+    SO["🔷 Schema Owner\n(Final authority on\nstructural changes)"]:::owner
+
+    DS1["🔵 Domain Steward\nArea A"]:::steward
+    DS2["🔵 Domain Steward\nArea B"]:::steward
+    DSn["🔵 Domain Steward\nArea N"]:::steward
+
+    BP["📋 Breaking Change Policy\n• Removing required property = BREAKING\n• Relaxing constraint = non-breaking\n• Adding optional property = non-breaking"]:::policy
+
+    DP["📋 Deprecation Policy\n• sh:deactivated true (soft)\n• owl:deprecated annotation\n• Version-bearing IRI replacement"]:::policy
+
+    VP["📋 Severity → Governance Mapping\n• sh:Violation — Schema Owner approved\n• sh:Warning — Domain Steward recommended\n• sh:Info — Documentation standard"]:::policy
+
+    SCOPE["🔲 ex:inScope Annotation\nMachine-queryable scope enforcement\non every sh:NodeShape"]:::shacl
+
+    CONF["🔲 sh:conformanceDisallows\nConfigured in Phase 0\nControls which severities\ntrigger sh:conforms false"]:::shacl
+
+    REV["🔲 ex:revision Annotation\nQueryable history per shape:\ndate · author · usecase · breakingChange"]:::shacl
+
+    SO --> DS1
+    SO --> DS2
+    SO --> DSn
+    SO --> BP
+    SO --> DP
+    SO --> VP
+
+    VP --> CONF
+    BP --> SCOPE
+    DP --> SCOPE
+    SO --> REV
+
+    CR["⚖️ Conflict Resolution Path\n1. Check governance table\n2. Severity compromise\n3. Shape bifurcation\n4. Schema Owner decides"]:::policy
+
+    DS1 --> CR
+    DS2 --> CR
+    DSn --> CR
+    CR --> SO

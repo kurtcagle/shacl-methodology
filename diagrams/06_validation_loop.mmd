@@ -1,0 +1,43 @@
+---
+title: Validation Feedback Loop (Phase 6)
+---
+flowchart TD
+    classDef test fill:#1F4E79,color:#fff,stroke:#1F4E79
+    classDef pass fill:#2E7F2E,color:#fff,stroke:#2E7F2E
+    classDef fail fill:#C00000,color:#fff,stroke:#C00000
+    classDef route fill:#BDD7EE,color:#1A1A1A,stroke:#2E75B6
+    classDef phase fill:#D6E4F0,color:#1A1A1A,stroke:#2E75B6
+
+    RUN["▶ Run test suite\nagainst shapes graph\n(pyshacl / rdf-validate-shacl)"]:::test
+
+    HAPPY{"Happy-path\ntests pass?"}:::route
+    FAIL_CASE{"Failure-case\ntests produce expected\nviolation?"}:::route
+    WRONG_COMP{"Correct\nsh:sourceConstraint\nComponent?"}:::route
+    BASELINE["✅ Regression baseline\nestablished\n\nAdvance to Phase 7"]:::pass
+
+    FIX_SHAPE["Constraint too strict\nor wrongly formed\n\n→ Review shape in\nPhase 4"]:::phase
+    FIX_EXEMPLAR["Exemplar is wrong\nor use case underspecified\n\n→ Return to Phase 2"]:::phase
+    FIX_CONSTRAINT["Constraint too loose —\ndoes not fire when\nit should\n\n→ Tighten in Phase 4"]:::phase
+    FIX_ABSTRACT["Shape composition error —\nabstract shape interaction\n\n→ Review Phase 5"]:::phase
+
+    CI["🔁 CI Pipeline\nRuns on every commit\nto shapes graph"]:::test
+
+    RUN --> HAPPY
+
+    HAPPY -->|"❌ Violation on\nhappy-path instance"| FIX_SHAPE
+    HAPPY -->|"❌ sh:conforms false\nexemplar data is wrong"| FIX_EXEMPLAR
+    HAPPY -->|"✅ All pass"| FAIL_CASE
+
+    FAIL_CASE -->|"❌ No violation\nproduced"| FIX_CONSTRAINT
+    FAIL_CASE -->|"✅ Violations fired"| WRONG_COMP
+
+    WRONG_COMP -->|"❌ Wrong component\ncited in report"| FIX_ABSTRACT
+    WRONG_COMP -->|"✅ Expected component"| BASELINE
+
+    BASELINE --> CI
+    CI --> RUN
+
+    FIX_SHAPE --> RUN
+    FIX_EXEMPLAR --> RUN
+    FIX_CONSTRAINT --> RUN
+    FIX_ABSTRACT --> RUN

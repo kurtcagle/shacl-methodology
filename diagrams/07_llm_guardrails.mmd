@@ -1,0 +1,44 @@
+---
+title: LLM Integration Points and Guard Rails
+---
+flowchart LR
+    classDef llm fill:#7B2D8B,color:#fff,stroke:#7B2D8B
+    classDef human fill:#1F4E79,color:#fff,stroke:#1F4E79
+    classDef guard fill:#C00000,color:#fff,stroke:#C00000
+    classDef output fill:#D6E4F0,color:#1A1A1A,stroke:#2E75B6
+    classDef phase fill:#BDD7EE,color:#1A1A1A,stroke:#2E75B6
+
+    P2["Phase 2\nExemplar Review"]:::phase
+    P4["Phase 4\nSchema Generation"]:::phase
+    P7["Phase 7\nTest Data Generation"]:::phase
+
+    LLM2["🤖 LLM\nObservation pass"]:::llm
+    LLM4["🤖 LLM\nSHACL first-pass"]:::llm
+    LLM7["🤖 LLM\nTest instance generation"]:::llm
+
+    G2["🛑 GUARD\n✗ No SHACL generation\n✗ No design suggestions\n✓ Contradictions only\n✓ Structural inconsistencies\n✓ Overloading flags"]:::guard
+    G4["🛑 GUARD\n✗ No sh:or/sh:xone/sh:and\n✗ No anonymous property shapes\n✓ Named sh:PropertyShapes only\n✓ sh:name + sh:description required\n✓ sh:reifierShape for annotated rels"]:::guard
+    G7["🛑 GUARD\n✗ Never trust LLM-asserted conformance\n✓ Validate every instance with pyshacl\n✓ Verify sh:sourceConstraintComponent"]:::guard
+
+    E2["Engineer reviews\ncontradiction list\nand resolves"]:::human
+    E4["Engineer applies\nguard-rail checklist\n(6 CRITICAL items)"]:::human
+    E7["Engineer validates\ngenerated instances\nwith actual processor"]:::human
+
+    O2["Revised exemplars\nwith contradictions\nresolved"]:::output
+    O4["Guard-rail-approved\nfirst-pass SHACL\n(no logical operators)"]:::output
+    O7["Verified test suite\ninstances for\nTest Phase 6"]:::output
+
+    P2 --> LLM2
+    LLM2 --> G2
+    G2 --> E2
+    E2 --> O2
+
+    P4 --> LLM4
+    LLM4 --> G4
+    G4 --> E4
+    E4 --> O4
+
+    P7 --> LLM7
+    LLM7 --> G7
+    G7 --> E7
+    E7 --> O7

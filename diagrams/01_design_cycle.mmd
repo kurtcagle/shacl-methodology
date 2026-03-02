@@ -1,0 +1,48 @@
+---
+title: SHACL Ontology Design Cycle
+---
+flowchart TD
+    classDef foundation fill:#1F4E79,color:#fff,stroke:#1F4E79,font-weight:bold
+    classDef cycle fill:#2E75B6,color:#fff,stroke:#2E75B6
+    classDef post fill:#404040,color:#fff,stroke:#404040
+    classDef decision fill:#BDD7EE,color:#1A1A1A,stroke:#2E75B6
+    classDef iterate stroke:#E05A00,stroke-width:2px,stroke-dasharray:6 3,fill:#FFF4EC,color:#1A1A1A
+
+    F0["⬛ Phase 0\nGovernance & Scope\nFoundation"]:::foundation
+    F1["⬛ Phase 1\nNamespace Strategy"]:::foundation
+
+    P2["🔵 Phase 2\nUse Case Development &\nExemplar Sketching"]:::cycle
+    P3["🔵 Phase 3\nTaxonomy & Reification\nIdentification"]:::cycle
+    P4["🔵 Phase 4\nFirst-Pass Schema\nGeneration"]:::cycle
+    P5["🔵 Phase 5\nAbstract Shape &\nUpper Ontology"]:::cycle
+    P6["🔵 Phase 6\nValidation, Testing &\nRegression"]:::cycle
+    P7["🔵 Phase 7\nStakeholder Review &\nGoverned Revision"]:::cycle
+
+    P8["⬛ Phase 8\nTransformer &\nIntegration Dev"]:::post
+    P9["⬛ Phase 9\nOngoing Governance &\nSchema Evolution"]:::post
+
+    D1{Exit criteria\nmet?}:::decision
+    D2{Nature of\nrevision?}:::decision
+
+    F0 --> F1 --> P2
+
+    P2 <-->|"Bidirectional\niteration"| P3
+    P3 --> P4
+    P4 --> P5
+    P5 --> P6
+    P6 --> P7
+    P7 --> D1
+
+    D1 -->|Yes| P8
+    D1 -->|No| D2
+
+    D2 -->|"Exemplar\nproblems"| P2
+    D2 -->|"Schema\nstructure only"| P4
+    D2 -->|"Validation\nfailures"| P5
+
+    P8 --> P9
+
+    style F0 rx:8,ry:8
+    style F1 rx:8,ry:8
+    style P8 rx:8,ry:8
+    style P9 rx:8,ry:8

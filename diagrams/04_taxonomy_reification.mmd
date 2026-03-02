@@ -1,0 +1,43 @@
+---
+title: Taxonomy–Reification Identification (Phase 3)
+---
+flowchart LR
+    classDef start fill:#1F4E79,color:#fff,stroke:#1F4E79
+    classDef question fill:#BDD7EE,color:#1A1A1A,stroke:#2E75B6
+    classDef outcome fill:#D6E4F0,color:#1A1A1A,stroke:#2E75B6
+    classDef shacl fill:#EEF4F9,color:#1A1A1A,stroke:#404040
+    classDef skos fill:#E8F4E8,color:#1A1A1A,stroke:#2E7F2E
+    classDef reif fill:#FFF4EC,color:#1A1A1A,stroke:#E05A00
+
+    START["Review all\nexemplar properties\nthat classify or\ncategorise"]:::start
+
+    Q1{"Does this\ncategory have\nattributes of\nits own?"}:::question
+    Q2{"Does the\nrelationship between\nsubject and category\nhave attributes?"}:::question
+    Q3{"If reified: what\nproperties would\nthe relationship\ncarry?"}:::question
+
+    SKOS["→ SKOS Taxonomy\n\nskos:Concept in a\nskos:ConceptScheme\n\nSHACL: sh:class skos:Concept\n+ sh:node scheme-validator"]:::skos
+
+    REIF["→ Reification\nCandidate\n\nSketch reified Turtle form.\nReturn to Phase 2\nexemplars."]:::reif
+
+    RSIMPLE["→ Simple sh:in\nor sh:or\n\nNo dedicated\nvocabulary needed"]:::shacl
+
+    RSHAPE["→ sh:reifierShape\n(SHACL 1.2)\n\nex:RelationshipAnnotationShape\nwith required annotation\nproperties"]:::reif
+
+    EMPTY["→ Reification\npremature\n\nKeep as simple\nproperty for now"]:::shacl
+
+    NEW_TAX["→ New taxonomy\nfound\n\nReturn to taxonomy\nbranch for\nthis type"]:::skos
+
+    START --> Q1
+
+    Q1 -->|Yes| Q2
+    Q1 -->|"No — small\nfixed set"| RSIMPLE
+    Q1 -->|"No — open\nvocabulary"| SKOS
+
+    Q2 -->|Yes| Q3
+    Q2 -->|No| SKOS
+
+    Q3 -->|"List is\nnon-empty"| RSHAPE
+    Q3 -->|"List is\nempty"| EMPTY
+
+    RSHAPE -->|"Annotation properties\nhave their own\nclassification needs"| NEW_TAX
+    REIF --> Q3

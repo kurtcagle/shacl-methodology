@@ -1,0 +1,60 @@
+---
+title: SHACL Methodology — Phase Overview
+---
+timeline
+    section Foundations (Once)
+        Phase 0 : Governance & Scope
+                : Define schema owner, domain stewards
+                : Document breaking-change policy
+                : Establish ex:inScope annotation
+                : Map sh:severity to governance meaning
+
+        Phase 1 : Namespace Strategy
+                : Select namespace pattern
+                : Define shared sh:prefixes resource
+                : Establish IRI naming conventions
+                : Sketch owl:imports hierarchy
+
+    section Iterative Cycle (Repeat until exit criteria met)
+        Phase 2 : Use Case Development
+                : Elicit use cases with domain stewards
+                : Sketch Turtle exemplars (2–4 per UC)
+                : LLM comparison pass — observations only
+
+        Phase 3 : Taxonomy & Reification
+                : Identify SKOS taxonomy candidates
+                : Explore reification candidates
+                : Sketch sh:reifierShape forms
+
+        Phase 4 : First-Pass Schema
+                : LLM-assisted SHACL generation
+                : Apply guard-rail checklist
+                : Validate against happy-path exemplars
+
+        Phase 5 : Abstract Shapes
+                : Identify shared structure candidates
+                : Build abstract shapes (no sh:targetClass)
+                : Compose via sh:and
+                : Extract to owl:imports modules
+
+        Phase 6 : Validation & Testing
+                : Build W3C-format test suite
+                : Set up CI pipeline
+                : Route failures to correct phase
+
+        Phase 7 : Stakeholder Review
+                : Generate per-use-case ERDs
+                : Governed review — domain stewards
+                : Track revisions with annotations
+                : Decide: advance or iterate
+
+    section Post-Cycle
+        Phase 8 : Transformers & Integration
+                : Build source-to-schema mapping matrix
+                : Implement SPARQL-Anything / TARQL transformers
+                : Validate transformer output against SHACL
+
+        Phase 9 : Ongoing Governance
+                : Quarterly review cadence
+                : Breaking change management
+                : SHACL-on-SHACL revision history

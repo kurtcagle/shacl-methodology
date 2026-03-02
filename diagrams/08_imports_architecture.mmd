@@ -1,0 +1,42 @@
+---
+title: owl:imports Module Architecture
+---
+graph TD
+    classDef abstract fill:#1F4E79,color:#fff,stroke:#1F4E79,font-weight:bold
+    classDef domain fill:#2E75B6,color:#fff,stroke:#2E75B6
+    classDef prefix fill:#404040,color:#fff,stroke:#404040
+    classDef ext fill:#D6E4F0,color:#1A1A1A,stroke:#2E75B6
+    classDef note fill:#EEF4F9,color:#1A1A1A,stroke:#BDD7EE,stroke-dasharray:4 2
+
+    PREF["📦 common-prefixes\nhttps://example.org/prefixes\n\nsh:declare for all\nproject prefixes.\nUsed via sh:prefixes in\nSPARQL constraints."]:::prefix
+
+    ABS["📦 abstract-shapes\nhttps://example.org/abstract\n\nAbstractNamedEntityShape\nAbstractProvenanceShape\nAbstractRelationshipShape\n\nNo sh:targetClass on any shape."]:::abstract
+
+    SKOS_V["📦 skos-vocabularies\nhttps://example.org/vocab\n\nEmploymentRole ConceptScheme\nStatusConcept ConceptScheme\nContractType ConceptScheme"]:::domain
+
+    ORDERS["📦 order-shapes\nhttps://example.org/orders\n\nOrderShape\nOrderLineShape\nFulfilmentEventShape"]:::domain
+
+    PRODUCTS["📦 product-shapes\nhttps://example.org/products\n\nProductShape\nCatalogueItemShape\nPricingShape"]:::domain
+
+    PERSONS["📦 person-shapes\nhttps://example.org/persons\n\nPersonShape\nOrganisationShape\nEmploymentAnnotationShape"]:::domain
+
+    UNION["📦 union-shapes\nhttps://example.org/shapes\n\nImports all domain modules.\nEntry point for validation."]:::domain
+
+    NOTE1["⚠️ Processors SHOULD\n(not MUST) follow\nowl:imports transitively.\nVerify your processor:\n• Jena: auto-resolves ✓\n• MarkLogic: manual merge required ✗"]:::note
+
+    PREF -->|"owl:imports\n(all modules)"| ORDERS
+    PREF -->|"owl:imports"| PRODUCTS
+    PREF -->|"owl:imports"| PERSONS
+
+    ABS -->|"owl:imports"| ORDERS
+    ABS -->|"owl:imports"| PRODUCTS
+    ABS -->|"owl:imports"| PERSONS
+
+    SKOS_V -->|"owl:imports"| ORDERS
+    SKOS_V -->|"owl:imports"| PERSONS
+
+    ORDERS -->|"owl:imports"| UNION
+    PRODUCTS -->|"owl:imports"| UNION
+    PERSONS -->|"owl:imports"| UNION
+
+    NOTE1 -.-> UNION
