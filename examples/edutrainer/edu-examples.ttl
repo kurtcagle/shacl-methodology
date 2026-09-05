@@ -1,0 +1,92 @@
+@prefix edu: <https://w3id.org/edutrainer#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# Generic test data for edu-ontology.ttl / edu-shapes.ttl.
+# One worked example per competency question, CQ-1 through CQ-3.
+# (Today's date for "valid as of today" purposes: 2026-09-04.)
+
+# --- CQ-1: Which certifications has a given learner earned, and are they
+#     still valid as of today's date? ---
+
+edu:cert-rdf-practitioner a edu:Certification ;
+    rdfs:label "RDF Practitioner" .
+
+edu:cert-data-governance-foundations a edu:Certification ;
+    rdfs:label "Data Governance Foundations" .
+
+edu:learner-jamie-osei a edu:Learner ;
+    rdfs:label "Jamie Osei" ;
+    edu:employedBy edu:org-northwind-logistics .
+
+edu:award-jamie-rdfprac a edu:CertificationAward ;
+    edu:awardedTo edu:learner-jamie-osei ;
+    edu:certifies edu:cert-rdf-practitioner ;
+    edu:issuedOn "2025-03-10"^^xsd:date ;
+    edu:expiresOn "2027-03-10"^^xsd:date .
+    # << edu:verifiedBy edu:instructor-dana-whitfield ; edu:evidenceDocument <https://training.example/evidence/jamie-rdfprac-exam> >>
+
+edu:award-jamie-datagov a edu:CertificationAward ;
+    edu:awardedTo edu:learner-jamie-osei ;
+    edu:certifies edu:cert-data-governance-foundations ;
+    edu:issuedOn "2022-01-15"^^xsd:date ;
+    edu:expiresOn "2024-01-15"^^xsd:date .
+    # This one has already lapsed as of 2026-09-04 - the point of the example.
+
+# --- CQ-2: Which course modules, and in what sequence, must a learner
+#     complete to qualify for a given certification? ---
+
+edu:module-graph-fundamentals a edu:CourseModule ;
+    rdfs:label "Graph Data Fundamentals" .
+
+edu:module-rdf-turtle a edu:CourseModule ;
+    rdfs:label "RDF and Turtle Syntax" .
+
+edu:module-sparql-practitioners a edu:CourseModule ;
+    rdfs:label "SPARQL for Practitioners" .
+
+edu:module-graph-fundamentals edu:precedes edu:module-rdf-turtle .
+edu:module-rdf-turtle edu:precedes edu:module-sparql-practitioners .
+
+edu:version-sparql-practitioners-v1 a edu:CourseVersion ;
+    rdfs:label "SPARQL for Practitioners, v1" ;
+    edu:versionOf edu:module-sparql-practitioners ;
+    edu:supersededBy edu:version-sparql-practitioners-v2 .
+
+edu:version-sparql-practitioners-v2 a edu:CourseVersion ;
+    rdfs:label "SPARQL for Practitioners, v2" ;
+    edu:versionOf edu:module-sparql-practitioners ;
+    edu:qualifiesFor edu:cert-rdf-practitioner .
+    # v1 does not qualify for anything any more - it was superseded before
+    # the RDF Practitioner mapping existed. This is the CQ-4 case sitting
+    # right next to the CQ-2 case: same data, different question.
+
+# --- CQ-3: Which certifications does a client organisation require of
+#     employees in a given role, and which of its employees currently
+#     fall short? ---
+
+edu:org-northwind-logistics a edu:ClientOrganization ;
+    rdfs:label "Northwind Logistics" .
+
+edu:cert-osha-warehouse-safety a edu:Certification ;
+    rdfs:label "OSHA Warehouse Safety" .
+
+edu:cert-forklift-operation-license a edu:Certification ;
+    rdfs:label "Forklift Operation License" .
+
+edu:role-warehouse-safety-lead a edu:Role ;
+    rdfs:label "Warehouse Safety Lead" ;
+    edu:requiresCertification edu:cert-osha-warehouse-safety, edu:cert-forklift-operation-license .
+
+edu:learner-priya-nandakumar a edu:Learner ;
+    rdfs:label "Priya Nandakumar" ;
+    edu:employedBy edu:org-northwind-logistics ;
+    edu:holdsRole edu:role-warehouse-safety-lead .
+
+edu:award-priya-osha a edu:CertificationAward ;
+    edu:awardedTo edu:learner-priya-nandakumar ;
+    edu:certifies edu:cert-osha-warehouse-safety ;
+    edu:issuedOn "2025-06-01"^^xsd:date ;
+    edu:expiresOn "2028-06-01"^^xsd:date .
+    # No award for edu:cert-forklift-operation-license exists for Priya -
+    # that gap is what the CQ-3 query below is built to surface.

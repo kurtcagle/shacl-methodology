@@ -1,0 +1,59 @@
+# SPARQL queries testing edu-examples.ttl against CQ-1, CQ-2, and CQ-3.
+# Run each against edu-ontology.ttl + edu-examples.ttl loaded together.
+
+PREFIX edu:  <https://w3id.org/edutrainer#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+
+# --- CQ-1: Which certifications has a given learner earned, and are they
+#     still valid as of today's date? ---
+# Expected result for edu:learner-jamie-osei on 2026-09-04:
+#   RDF Practitioner              | 2025-03-10 | 2027-03-10 | valid
+#   Data Governance Foundations   | 2022-01-15 | 2024-01-15 | lapsed
+
+SELECT ?certLabel ?issuedOn ?expiresOn
+       (IF(?expiresOn >= "2026-09-04"^^xsd:date, "valid", "lapsed") AS ?status)
+WHERE {
+  ?award edu:awardedTo edu:learner-jamie-osei ;
+         edu:certifies ?cert ;
+         edu:issuedOn ?issuedOn ;
+         edu:expiresOn ?expiresOn .
+  ?cert rdfs:label ?certLabel .
+}
+ORDER BY ?issuedOn
+
+
+# --- CQ-2: Which course modules, and in what sequence, must a learner
+#     complete to qualify for a given certification? ---
+# Expected result for edu:cert-rdf-practitioner:
+#   Graph Data Fundamentals -> RDF and Turtle Syntax -> SPARQL for Practitioners
+# (via the transitive edu:precedes chain ending at the module whose current
+# version qualifies for the certification)
+
+SELECT ?moduleLabel
+WHERE {
+  ?version edu:qualifiesFor edu:cert-rdf-practitioner ;
+           edu:versionOf ?finalModule .
+  ?module edu:precedes* ?finalModule .
+  ?module rdfs:label ?moduleLabel .
+}
+
+
+# --- CQ-3: Which certifications does a client organisation require of
+#     employees in a given role, and which of its employees currently
+#     fall short? ---
+# Expected result for edu:org-northwind-logistics:
+#   Priya Nandakumar | Forklift Operation License
+
+SELECT ?learnerLabel ?missingCertLabel
+WHERE {
+  ?learner edu:employedBy edu:org-northwind-logistics ;
+           edu:holdsRole ?role ;
+           rdfs:label ?learnerLabel .
+  ?role edu:requiresCertification ?requiredCert .
+  ?requiredCert rdfs:label ?missingCertLabel .
+  FILTER NOT EXISTS {
+    ?award edu:awardedTo ?learner ;
+           edu:certifies ?requiredCert .
+  }
+}

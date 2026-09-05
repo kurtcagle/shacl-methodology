@@ -1,0 +1,77 @@
+@prefix edu: <https://w3id.org/edutrainer#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix skosxl: <http://www.w3.org/2008/05/skos-xl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# EduTrainer ontology
+# Companion to "Should AIs Construct Your Ontology?" (The Ontologist)
+# Generated against CQ-1 .. CQ-6, see edu-shapes.ttl for the validating shapes
+# and edu-examples.ttl / edu-competency-queries.rq for worked test data.
+
+edu:Learner a rdfs:Class ;
+    rdfs:label "Learner" ;
+    skos:definition "A person enrolled in one or more course versions offered by the training organisation." .
+
+edu:Instructor a rdfs:Class ;
+    rdfs:label "Instructor" ;
+    skos:definition "A person authorised, for one or more certifications, to deliver instruction or proctor the associated exam." .
+
+edu:ClientOrganization a rdfs:Class ;
+    rdfs:label "Client Organisation" ;
+    skos:definition "A company that purchases training on behalf of its employees and may set certification requirements by role." .
+
+edu:Role a rdfs:Class ;
+    rdfs:label "Role" ;
+    skos:definition "A job function within a client organisation to which certification requirements attach, independent of any one employee holding it." .
+
+edu:CourseModule a rdfs:Class ;
+    rdfs:label "Course Module" ;
+    skos:definition "A named unit of instructional content, independent of any particular revision of that content." .
+
+edu:CourseVersion a rdfs:Class ;
+    rdfs:label "Course Version" ;
+    skos:definition "A specific, dated revision of a course module, delivered to and completed by learners." .
+
+edu:Certification a rdfs:Class ;
+    rdfs:label "Certification" ;
+    skos:definition "A credential that can be earned by a learner and required by a client organisation of a role." .
+
+edu:CertificationAward a rdfs:Class ;
+    rdfs:label "Certification Award" ;
+    skos:definition "A record that a specific learner earned a specific certification on a specific date, valid until a specific date." .
+
+edu:CompletionRecord a rdfs:Class ;
+    rdfs:label "Completion Record" ;
+    skos:definition "A record that a specific learner completed a specific version of a course on a specific date." .
+
+edu:ProctorAuthorization a rdfs:Class ;
+    rdfs:label "Proctor Authorization" ;
+    skos:definition "A record that a specific instructor is authorised to deliver instruction for, or proctor the exam of, a specific certification, for a bounded period." .
+
+edu:employedBy a rdf:Property ; rdfs:label "employed by" ; rdfs:domain edu:Learner ; rdfs:range edu:ClientOrganization .
+edu:holdsRole a rdf:Property ; rdfs:label "holds role" ; rdfs:domain edu:Learner ; rdfs:range edu:Role .
+edu:requiresCertification a rdf:Property ; rdfs:label "requires certification" ; rdfs:domain edu:Role ; rdfs:range edu:Certification .
+edu:awardedTo a rdf:Property ; rdfs:label "awarded to" ; rdfs:domain edu:CertificationAward ; rdfs:range edu:Learner .
+edu:certifies a rdf:Property ; rdfs:label "certifies" ; rdfs:domain edu:CertificationAward ; rdfs:range edu:Certification .
+edu:issuedOn a rdf:Property ; rdfs:label "issued on" ; rdfs:domain edu:CertificationAward ; rdfs:range xsd:date .
+edu:expiresOn a rdf:Property ; rdfs:label "expires on" ; rdfs:domain edu:CertificationAward ; rdfs:range xsd:date .
+edu:verifiedBy a rdf:Property ; rdfs:label "verified by" ; rdfs:comment "Used on the reifier of an edu:certifies statement, not on the award itself." ; rdfs:range edu:Instructor .
+edu:evidenceDocument a rdf:Property ; rdfs:label "evidence document" ; rdfs:comment "Used on the reifier of an edu:certifies statement, not on the award itself." .
+edu:completedBy a rdf:Property ; rdfs:label "completed by" ; rdfs:domain edu:CompletionRecord ; rdfs:range edu:Learner .
+edu:ofVersion a rdf:Property ; rdfs:label "of version" ; rdfs:domain edu:CompletionRecord ; rdfs:range edu:CourseVersion .
+edu:completedOn a rdf:Property ; rdfs:label "completed on" ; rdfs:domain edu:CompletionRecord ; rdfs:range xsd:date .
+edu:versionOf a rdf:Property ; rdfs:label "version of" ; rdfs:domain edu:CourseVersion ; rdfs:range edu:CourseModule .
+edu:supersededBy a rdf:Property ; rdfs:label "superseded by" ; rdfs:domain edu:CourseVersion ; rdfs:range edu:CourseVersion .
+edu:qualifiesFor a rdf:Property ; rdfs:label "qualifies for" ; rdfs:domain edu:CourseVersion ; rdfs:range edu:Certification .
+edu:precedes a rdf:Property ; rdfs:label "precedes" ; rdfs:domain edu:CourseModule ; rdfs:range edu:CourseModule .
+edu:authorizedInstructor a rdf:Property ; rdfs:label "authorized instructor" ; rdfs:domain edu:ProctorAuthorization ; rdfs:range edu:Instructor .
+edu:proctorFor a rdf:Property ; rdfs:label "proctor for" ; rdfs:domain edu:ProctorAuthorization ; rdfs:range edu:Certification .
+edu:authorizedFrom a rdf:Property ; rdfs:label "authorized from" ; rdfs:domain edu:ProctorAuthorization ; rdfs:range xsd:date .
+edu:authorizedUntil a rdf:Property ; rdfs:label "authorized until" ; rdfs:domain edu:ProctorAuthorization ; rdfs:range xsd:date .
+
+edu:addressesCQ a rdf:Property ;
+    rdfs:label "addresses competency question" ;
+    rdfs:comment "Annotation property linking a SHACL shape to the CQ index (e.g. \"CQ-1\") it was written to satisfy." ;
+    rdfs:range xsd:string .

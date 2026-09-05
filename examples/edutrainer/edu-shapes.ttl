@@ -1,0 +1,246 @@
+@prefix edu: <https://w3id.org/edutrainer#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# EduTrainer SHACL shapes
+# Validates edu-ontology.ttl. Every constraint is a named PropertyShape
+# (no blank nodes), and every NodeShape/PropertyShape carries edu:addressesCQ
+# pointing back to the competency question it exists to answer.
+
+# --- Learner (CQ-3) ---
+
+edu:LearnerShape a sh:NodeShape ;
+    sh:targetClass edu:Learner ;
+    sh:name "Learner Shape" ;
+    sh:description "Validates that a learner is tied to at most one employer and zero or more roles, so role-based certification requirements can be evaluated." ;
+    edu:addressesCQ "CQ-3" ;
+    sh:severity sh:Violation ;
+    sh:property edu:LearnerEmployedByShape, edu:LearnerHoldsRoleShape .
+
+edu:LearnerEmployedByShape a sh:PropertyShape ;
+    sh:path edu:employedBy ;
+    sh:name "employed by" ;
+    sh:class edu:ClientOrganization ;
+    sh:nodeKind sh:IRI ;
+    sh:maxCount 1 ;
+    sh:message "A learner should be linked to at most one client organisation." .
+
+edu:LearnerHoldsRoleShape a sh:PropertyShape ;
+    sh:path edu:holdsRole ;
+    sh:name "holds role" ;
+    sh:class edu:Role ;
+    sh:nodeKind sh:IRI ;
+    sh:message "A learner may hold zero or more roles over time; each must resolve to a known Role." .
+
+# --- Role (CQ-3) ---
+
+edu:RoleShape a sh:NodeShape ;
+    sh:targetClass edu:Role ;
+    sh:name "Role Shape" ;
+    sh:description "Ties a role to the certifications it requires, so unmet requirements can be surfaced by role rather than by individually maintained per-employee lists." ;
+    edu:addressesCQ "CQ-3" ;
+    sh:severity sh:Violation ;
+    sh:property edu:RoleRequiresCertificationShape .
+
+edu:RoleRequiresCertificationShape a sh:PropertyShape ;
+    sh:path edu:requiresCertification ;
+    sh:name "requires certification" ;
+    sh:class edu:Certification ;
+    sh:nodeKind sh:IRI ;
+    sh:message "Each required certification must resolve to a known Certification." .
+
+# --- Course Module (CQ-2) ---
+
+edu:CourseModuleShape a sh:NodeShape ;
+    sh:targetClass edu:CourseModule ;
+    sh:name "Course Module Shape" ;
+    sh:description "Validates that a module's prerequisite, where one is given, resolves to another known module, so the sequence behind a certification's requirements is checkable rather than assumed." ;
+    edu:addressesCQ "CQ-2" ;
+    sh:severity sh:Violation ;
+    sh:property edu:ModulePrecedesShape .
+
+edu:ModulePrecedesShape a sh:PropertyShape ;
+    sh:path edu:precedes ;
+    sh:name "precedes" ;
+    sh:class edu:CourseModule ;
+    sh:nodeKind sh:IRI ;
+    sh:message "A module's prerequisite, where one exists, must resolve to another known Course Module." .
+
+# --- Certification Award (CQ-1, CQ-6) ---
+
+edu:CertificationAwardShape a sh:NodeShape ;
+    sh:targetClass edu:CertificationAward ;
+    sh:name "Certification Award Shape" ;
+    sh:description "Validates that an award names exactly one learner and one certification with an issue date, and constrains expiry so that validity-as-of-today and expiring-soon queries are answerable." ;
+    edu:addressesCQ "CQ-1", "CQ-6" ;
+    sh:severity sh:Violation ;
+    sh:property edu:AwardAwardedToShape, edu:AwardCertifiesShape, edu:AwardIssuedOnShape, edu:AwardExpiresOnShape .
+
+edu:AwardAwardedToShape a sh:PropertyShape ;
+    sh:path edu:awardedTo ;
+    sh:name "awarded to" ;
+    sh:class edu:Learner ;
+    sh:nodeKind sh:IRI ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:message "A certification award must name exactly one learner." .
+
+edu:AwardCertifiesShape a sh:PropertyShape ;
+    sh:path edu:certifies ;
+    sh:name "certifies" ;
+    sh:class edu:Certification ;
+    sh:nodeKind sh:IRI ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:message "A certification award must name exactly one certification." ;
+    sh:reifierNode edu:CertificationProvenanceShape .
+
+edu:CertificationProvenanceShape a sh:NodeShape ;
+    sh:name "Certification Provenance Shape" ;
+    sh:description "Shape for the reifier of the edu:certifies statement: who verified the award and against what evidence, kept off the award itself so provenance can be added or corrected independently." ;
+    edu:addressesCQ "CQ-1" ;
+    sh:property edu:ProvenanceVerifiedByShape, edu:ProvenanceEvidenceDocumentShape .
+
+edu:ProvenanceVerifiedByShape a sh:PropertyShape ;
+    sh:path edu:verifiedBy ;
+    sh:name "verified by" ;
+    sh:class edu:Instructor ;
+    sh:nodeKind sh:IRI ;
+    sh:maxCount 1 .
+
+edu:ProvenanceEvidenceDocumentShape a sh:PropertyShape ;
+    sh:path edu:evidenceDocument ;
+    sh:name "evidence document" ;
+    sh:nodeKind sh:IRI ;
+    sh:maxCount 1 ;
+    sh:message "Where available, link to the exam result or portfolio evidencing the award." ;
+    sh:severity sh:Info .
+
+edu:AwardIssuedOnShape a sh:PropertyShape ;
+    sh:path edu:issuedOn ;
+    sh:name "issued on" ;
+    sh:datatype xsd:date ;
+    sh:nodeKind sh:Literal ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:message "An award must record an issue date." .
+
+edu:AwardExpiresOnShape a sh:PropertyShape ;
+    sh:path edu:expiresOn ;
+    sh:name "expires on" ;
+    sh:datatype xsd:date ;
+    sh:nodeKind sh:Literal ;
+    sh:maxCount 1 ;
+    sh:message "If a certification lapses, its award should record an expiry date; a permanent certification may omit it." ;
+    sh:severity sh:Warning .
+
+# --- Completion Record (CQ-4) ---
+
+edu:CompletionRecordShape a sh:NodeShape ;
+    sh:targetClass edu:CompletionRecord ;
+    sh:name "Completion Record Shape" ;
+    sh:description "Ties a learner to the specific course version they completed, so version drift against current certification requirements is checkable." ;
+    edu:addressesCQ "CQ-4" ;
+    sh:severity sh:Violation ;
+    sh:property edu:CompletionCompletedByShape, edu:CompletionOfVersionShape, edu:CompletionCompletedOnShape .
+
+edu:CompletionCompletedByShape a sh:PropertyShape ;
+    sh:path edu:completedBy ;
+    sh:name "completed by" ;
+    sh:class edu:Learner ;
+    sh:nodeKind sh:IRI ;
+    sh:minCount 1 ;
+    sh:maxCount 1 .
+
+edu:CompletionOfVersionShape a sh:PropertyShape ;
+    sh:path edu:ofVersion ;
+    sh:name "of version" ;
+    sh:class edu:CourseVersion ;
+    sh:nodeKind sh:IRI ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:message "A completion record must name exactly one course version, never the module in the abstract." .
+
+edu:CompletionCompletedOnShape a sh:PropertyShape ;
+    sh:path edu:completedOn ;
+    sh:name "completed on" ;
+    sh:datatype xsd:date ;
+    sh:nodeKind sh:Literal ;
+    sh:minCount 1 ;
+    sh:maxCount 1 .
+
+# --- Course Version (CQ-2, CQ-4) ---
+
+edu:CourseVersionShape a sh:NodeShape ;
+    sh:targetClass edu:CourseVersion ;
+    sh:name "Course Version Shape" ;
+    sh:description "Links a version back to its module and, where superseded, forward to its replacement, and records which certification it currently qualifies a learner for." ;
+    edu:addressesCQ "CQ-2", "CQ-4" ;
+    sh:severity sh:Violation ;
+    sh:property edu:VersionOfModuleShape, edu:VersionSupersededByShape, edu:VersionQualifiesForShape .
+
+edu:VersionOfModuleShape a sh:PropertyShape ;
+    sh:path edu:versionOf ;
+    sh:name "version of" ;
+    sh:class edu:CourseModule ;
+    sh:nodeKind sh:IRI ;
+    sh:minCount 1 ;
+    sh:maxCount 1 .
+
+edu:VersionSupersededByShape a sh:PropertyShape ;
+    sh:path edu:supersededBy ;
+    sh:name "superseded by" ;
+    sh:class edu:CourseVersion ;
+    sh:nodeKind sh:IRI ;
+    sh:maxCount 1 ;
+    sh:message "Where a newer version exists, link to it directly rather than relying on a version-number string to imply order." ;
+    sh:severity sh:Warning .
+
+edu:VersionQualifiesForShape a sh:PropertyShape ;
+    sh:path edu:qualifiesFor ;
+    sh:name "qualifies for" ;
+    sh:class edu:Certification ;
+    sh:nodeKind sh:IRI ;
+    sh:message "A course version may currently qualify a learner for zero or more certifications - this is exactly what breaks when a version is superseded and the mapping isn't carried forward." .
+
+# --- Proctor Authorization (CQ-5) ---
+
+edu:ProctorAuthorizationShape a sh:NodeShape ;
+    sh:targetClass edu:ProctorAuthorization ;
+    sh:name "Proctor Authorization Shape" ;
+    sh:description "Validates that an authorization names exactly one instructor and one certification, bounded by a validity window." ;
+    edu:addressesCQ "CQ-5" ;
+    sh:severity sh:Violation ;
+    sh:property edu:ProctorInstructorShape, edu:ProctorForCertificationShape, edu:ProctorFromShape, edu:ProctorUntilShape .
+
+edu:ProctorInstructorShape a sh:PropertyShape ;
+    sh:path edu:authorizedInstructor ;
+    sh:name "authorized instructor" ;
+    sh:class edu:Instructor ;
+    sh:nodeKind sh:IRI ;
+    sh:minCount 1 ;
+    sh:maxCount 1 .
+
+edu:ProctorForCertificationShape a sh:PropertyShape ;
+    sh:path edu:proctorFor ;
+    sh:name "proctor for" ;
+    sh:class edu:Certification ;
+    sh:nodeKind sh:IRI ;
+    sh:minCount 1 ;
+    sh:maxCount 1 .
+
+edu:ProctorFromShape a sh:PropertyShape ;
+    sh:path edu:authorizedFrom ;
+    sh:name "authorized from" ;
+    sh:datatype xsd:date ;
+    sh:nodeKind sh:Literal ;
+    sh:maxCount 1 .
+
+edu:ProctorUntilShape a sh:PropertyShape ;
+    sh:path edu:authorizedUntil ;
+    sh:name "authorized until" ;
+    sh:datatype xsd:date ;
+    sh:nodeKind sh:Literal ;
+    sh:maxCount 1 ;
+    sh:message "An authorization without an end date is treated as open-ended; most certifying bodies require one." ;
+    sh:severity sh:Warning .

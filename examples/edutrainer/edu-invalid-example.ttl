@@ -1,0 +1,33 @@
+@prefix edu: <https://w3id.org/edutrainer#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# A merged/malformed award record - the kind an import script produces when
+# the source system keyed one row per (learner, certification) pair without
+# a stable award identifier, and a naive "group by learner" import folded
+# two rows into one node. The issue date also got dropped because the
+# source spreadsheet cell was blank rather than "unknown."
+
+edu:award-priya-bad a edu:CertificationAward ;
+    edu:awardedTo edu:learner-priya-nandakumar ;
+    edu:certifies edu:cert-osha-warehouse-safety, edu:cert-forklift-operation-license ;
+    edu:expiresOn "2028-06-01"^^xsd:date .
+
+# ===== Validating this node against edu-shapes.ttl (pyshacl 0.40.1) produces: =====
+#
+# [] a sh:ValidationReport ;
+#     sh:conforms false ;
+#     sh:result
+#         [ a sh:ValidationResult ;
+#             sh:focusNode edu:award-priya-bad ;
+#             sh:resultPath edu:certifies ;
+#             sh:resultSeverity sh:Violation ;
+#             sh:sourceShape edu:AwardCertifiesShape ;
+#             sh:sourceConstraintComponent sh:MaxCountConstraintComponent ;
+#             sh:resultMessage "A certification award must name exactly one certification." ],
+#         [ a sh:ValidationResult ;
+#             sh:focusNode edu:award-priya-bad ;
+#             sh:resultPath edu:issuedOn ;
+#             sh:resultSeverity sh:Violation ;
+#             sh:sourceShape edu:AwardIssuedOnShape ;
+#             sh:sourceConstraintComponent sh:MinCountConstraintComponent ;
+#             sh:resultMessage "An award must record an issue date." ] .
