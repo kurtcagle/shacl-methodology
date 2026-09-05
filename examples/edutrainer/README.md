@@ -1,6 +1,6 @@
 # EduTrainer Worked Example
 
-Companion files for ["Should AIs Construct Your Ontology?"](https://ontologist.substack.com) (The Ontologist) - a small, fully worked example of the competency-question-driven design process described in the methodology, applied to a fictional company producing educational training materials with certifications.
+Companion files for ["Should AIs Construct Your Ontology?"](https://ontologist.substack.com/p/should-ais-construct-your-ontology) (The Ontologist) - a small, fully worked example of the competency-question-driven design process described in the methodology, applied to a fictional company producing educational training materials with certifications.
 
 ## Files
 
@@ -25,7 +25,7 @@ All six are addressed by shapes in `edu-shapes.ttl`; worked instance data and qu
 
 ## A terminology note
 
-This example's shapes use `sh:reifierNode` (per the SHACL 1.2 Working Draft dated 2026-08-28 referenced in the article's generation prompt) to shape the reifier of the `edu:certifies` statement. The main methodology document in this repo uses `sh:reifierShape` for the same purpose. The two drafts appear to have used different working names for this feature at different points - worth reconciling to one term across both documents.
+This example's shapes use `sh:reifierShape`, matching the term used throughout the main methodology document in this repo, to shape the reifier of the `edu:certifies` statement. (An earlier draft of this example used `sh:reifierNode`, an inconsistency now reconciled across both documents.)
 
 ## Running it yourself
 
@@ -55,4 +55,4 @@ print(report)
 
 ---
 
-*Kurt Cagle & Chloe Shannon · [The Ontologist](https://ontologist.substack.com)*
+*Kurt Cagle & Chloe Shannon · [The Ontologist](https://ontologist.substack.com/p/should-ais-construct-your-ontology)*

@@ -93,7 +93,7 @@ edu:AwardCertifiesShape a sh:PropertyShape ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:message "A certification award must name exactly one certification." ;
-    sh:reifierNode edu:CertificationProvenanceShape .
+    sh:reifierShape edu:CertificationProvenanceShape .
 
 edu:CertificationProvenanceShape a sh:NodeShape ;
     sh:name "Certification Provenance Shape" ;
