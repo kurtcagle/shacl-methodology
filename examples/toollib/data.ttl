@@ -1,0 +1,26 @@
+@prefix tl:   <https://example.org/toollib#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+# Members
+tl:memberA a tl:Member ; rdfs:label "Member A" .
+tl:memberB a tl:Member ; rdfs:label "Member B" .
+tl:memberC a tl:Member ; rdfs:label "Member C" .
+
+# Items
+tl:drill      a tl:Item ; rdfs:label "Drill"           ; tl:status tl:OnLoan    ; tl:replacementValue 90.00  ; tl:conditionNote "New chuck, 2026" .
+tl:ladder     a tl:Item ; rdfs:label "Ladder"          ; tl:status tl:OnLoan    ; tl:replacementValue 150.00 .
+tl:saw        a tl:Item ; rdfs:label "Mitre saw"       ; tl:status tl:Available ; tl:replacementValue 220.00 .
+tl:sander     a tl:Item ; rdfs:label "Belt sander"     ; tl:status tl:Withdrawn .
+tl:tilecutter a tl:Item ; rdfs:label "Tile cutter"     ; tl:status tl:OnLoan .
+tl:trimmer    a tl:Item ; rdfs:label "Hedge trimmer"   ; tl:status tl:OnLoan .
+tl:washer     a tl:Item ; rdfs:label "Pressure washer" ; tl:status tl:Available ; tl:replacementValue 200.00 .
+
+# Loans. A loan with no returnedDate is open.
+tl:loan1 a tl:Loan ; tl:borrower tl:memberA ; tl:item tl:drill ;      tl:dueDate "2026-11-10"^^xsd:date ; tl:returnedDate "2026-11-09"^^xsd:date .
+tl:loan2 a tl:Loan ; tl:borrower tl:memberA ; tl:item tl:ladder ;     tl:dueDate "2026-11-05"^^xsd:date .
+tl:loan3 a tl:Loan ; tl:borrower tl:memberB ; tl:item tl:saw ;        tl:dueDate "2026-11-08"^^xsd:date .
+tl:loan4 a tl:Loan ; tl:borrower tl:memberB ; tl:item tl:sander ;     tl:dueDate "2026-12-01"^^xsd:date .
+tl:loan5 a tl:Loan ; tl:borrower tl:memberA ; tl:item tl:tilecutter ; tl:dueDate "2026-11-30"^^xsd:date .
+tl:loan6 a tl:Loan ; tl:borrower tl:memberA ; tl:item tl:trimmer ;    tl:dueDate "2026-12-01"^^xsd:date .
+tl:loan7 a tl:Loan ; tl:borrower tl:memberC ; tl:item tl:drill .

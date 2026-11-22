@@ -1,0 +1,74 @@
+@prefix lem:  <https://example.org/lemma#> .
+@prefix tls:  <https://example.org/toollib/shapes#> .
+@prefix tlcq: <https://example.org/toollib/cq#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+
+# ---- Normative levels and the SHACL severity each implies ---------------
+
+lem:MUST    a lem:Level ; skos:notation "MUST"     ; lem:severity sh:Violation .
+lem:MUSTNOT a lem:Level ; skos:notation "MUST NOT" ; lem:severity sh:Violation .
+lem:SHOULD  a lem:Level ; skos:notation "SHOULD"   ; lem:severity sh:Warning .
+lem:MAY     a lem:Level ; skos:notation "MAY"      ; lem:severity sh:Info .
+
+# ---- Competency questions ---------------------------------------------------
+
+tlcq:CQ1 a lem:CompetencyQuestion ; rdfs:label "Which items are on loan, and to whom?" ;          lem:query "cq1.rq" .
+tlcq:CQ2 a lem:CompetencyQuestion ; rdfs:label "Which loans are overdue today?" ;                  lem:query "cq2.rq" .
+tlcq:CQ3 a lem:CompetencyQuestion ; rdfs:label "Can this member borrow this item today?" ;         lem:query "cq3.rq" .
+tlcq:CQ4 a lem:CompetencyQuestion ; rdfs:label "What would it cost to replace each item?" ;        lem:query "cq4.rq" .
+
+# ---- Lemmas -----------------------------------------------------------------
+# enforcedBy = the shape whose severity must agree with the level.
+# guardedBy  = the always-a-Violation "if present, well-formed" shape.
+
+lem:L1 a lem:Lemma ; lem:level lem:MUST ;
+    lem:text "Every loan has exactly one borrower, who is a member, and exactly one item." ;
+    lem:fromQuestion tlcq:CQ1 ;
+    lem:enforcedBy tls:loan-borrower , tls:loan-item ;
+    lem:status lem:Accepted ; lem:origin lem:LLMProposed .
+
+lem:L2 a lem:Lemma ; lem:level lem:MUST ;
+    lem:text "Every loan has exactly one due date." ;
+    lem:fromQuestion tlcq:CQ2 ;
+    lem:enforcedBy tls:loan-due ;
+    lem:status lem:Accepted ; lem:origin lem:LLMProposed .
+
+lem:L3 a lem:Lemma ; lem:level lem:MUST ;
+    lem:text "A loan has at most one returned date; a loan with none is open." ;
+    lem:fromQuestion tlcq:CQ1 , tlcq:CQ2 ;
+    lem:enforcedBy tls:loan-returned ;
+    lem:status lem:Accepted ; lem:origin lem:LLMProposed .
+
+lem:L4 a lem:Lemma ; lem:level lem:MUSTNOT ;
+    lem:text "An item that has been withdrawn is not on an open loan." ;
+    lem:fromQuestion tlcq:CQ3 ;
+    lem:enforcedBy tls:no-open-loan-on-withdrawn ;
+    lem:status lem:Accepted ; lem:origin lem:LLMProposed .
+
+lem:L5 a lem:Lemma ; lem:level lem:MUSTNOT ;
+    lem:text "An item on an open loan does not have status Available." ;
+    lem:fromQuestion tlcq:CQ3 ;
+    lem:raisedByFailureOf tlcq:CQ2 ;
+    lem:enforcedBy tls:no-available-with-open-loan ;
+    lem:status lem:Accepted ; lem:origin lem:LLMProposed .
+
+lem:L6 a lem:Lemma ; lem:level lem:MUSTNOT ;
+    lem:text "A member does not have more than two open loans." ;
+    lem:fromQuestion tlcq:CQ3 ;
+    lem:enforcedBy tls:member-open-loan-limit ;
+    lem:status lem:Accepted ; lem:origin lem:LLMProposed .
+
+lem:L7 a lem:Lemma ; lem:level lem:SHOULD ;
+    lem:text "Every item has a replacement value." ;
+    lem:fromQuestion tlcq:CQ4 ;
+    lem:enforcedBy tls:item-replacement-present ;
+    lem:guardedBy  tls:item-replacement-valid ;
+    lem:status lem:Accepted ; lem:origin lem:LLMProposed .
+
+lem:L8 a lem:Lemma ; lem:level lem:MAY ;
+    lem:text "An item may carry a condition note." ;
+    lem:enforcedBy tls:item-note-present ;
+    lem:guardedBy  tls:item-note-valid ;
+    lem:status lem:Accepted ; lem:origin lem:Authored .

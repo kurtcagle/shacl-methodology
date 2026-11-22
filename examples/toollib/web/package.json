@@ -1,0 +1,16 @@
+{
+  "name": "toollib-web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "esbuild src/toy.js --bundle --platform=browser --format=iife --global-name=ToyEngine --minify --outfile=toy.js --define:process.env.NODE_ENV=\"\\\"production\\\"\"",
+    "test": "node test/parity.mjs"
+  },
+  "dependencies": {
+    "@comunica/query-sparql-rdfjs": "5.4.1",
+    "n3": "2.13.12"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.0"
+  }
+}

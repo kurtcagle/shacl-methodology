@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tool Library Lemma Toy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: a header, a file editor beside a report, both full height on wide screens, stacked on phones. */
+:root {
+  --bg: #f4f6f8;
+  --panel: #ffffff;
+  --ink: #17212b;
+  --muted: #5a6877;
+  --line: #d5dce3;
+  --accent: #0b6b73;
+  --accent-ink: #ffffff;
+  --bad: #b42318;
+  --warn: #9a5b00;
+  --info: #1d5fa8;
+  --good: #1a7a3c;
+  --code-bg: #eef2f5;
+  --display: "IBM Plex Sans", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11171d; --panel: #18212a; --ink: #e6ecf1; --muted: #9aa8b5; --line: #2c3945;
+    --accent: #4cc3cc; --accent-ink: #08262a; --bad: #ff8a80; --warn: #f3b562; --info: #7db7f0;
+    --good: #6fd196; --code-bg: #0e141a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11171d; --panel: #18212a; --ink: #e6ecf1; --muted: #9aa8b5; --line: #2c3945;
+  --accent: #4cc3cc; --accent-ink: #08262a; --bad: #ff8a80; --warn: #f3b562; --info: #7db7f0;
+  --good: #6fd196; --code-bg: #0e141a; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--display); font-size: 16px; line-height: 1.5; }
+body { padding: 20px 16px 40px; }
+main { max-width: 1280px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+h1 { font-size: 1.6rem; line-height: 1.2; margin: 0; text-wrap: balance; }
+h2 { font-size: 0.8rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin: 0; font-weight: 600; }
+p { margin: 0; }
+header { display: flex; flex-direction: column; gap: 8px; max-width: 70ch; }
+header p { color: var(--muted); }
+.status { display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); font-size: 0.875rem; }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--warn); }
+.status[data-state="ready"] .dot { background: var(--good); }
+.status[data-state="error"] .dot { background: var(--bad); }
+.status[data-state="busy"] .dot { animation: pulse 1s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: 0.25; } }
+@media (prefers-reduced-motion: reduce) { .status[data-state="busy"] .dot { animation: none; } }
+.grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+@media (min-width: 960px) { .grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; display: flex; flex-direction: column; min-width: 0; }
+.panel-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+.tabs { display: flex; flex-wrap: wrap; gap: 4px; padding: 8px 12px 0; }
+.tab { font: 500 0.8125rem var(--mono); padding: 5px 10px; border: 1px solid var(--line); border-bottom: none; border-radius: 6px 6px 0 0; background: var(--code-bg); color: var(--muted); cursor: pointer; }
+.tab[aria-selected="true"] { background: var(--panel); color: var(--ink); border-color: var(--accent); box-shadow: inset 0 2px 0 var(--accent); }
+.tab[data-dirty="true"]::after { content: " *"; color: var(--warn); }
+textarea { width: 100%; min-height: 420px; flex: 1; resize: vertical; border: none; border-top: 1px solid var(--line); background: var(--code-bg); color: var(--ink); font: 400 0.8125rem/1.55 var(--mono); padding: 12px; tab-size: 4; white-space: pre; overflow: auto; border-radius: 0 0 8px 8px; }
+button, .btn { font: 500 0.875rem var(--display); border-radius: 6px; padding: 7px 14px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; }
+button:hover:not(:disabled) { border-color: var(--accent); }
+button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.today { font-size: 0.875rem; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.today input { font: 400 0.8125rem var(--mono); padding: 4px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--ink); }
+.try { padding: 12px; display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--line); }
+.try-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.try-note { font-size: 0.875rem; color: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; padding: 8px 12px; font-size: 0.8125rem; color: var(--muted); border-bottom: 1px solid var(--line); }
+.legend b { font-weight: 600; }
+pre#out { margin: 0; padding: 12px; font: 400 0.8125rem/1.6 var(--mono); overflow: auto; flex: 1; min-height: 420px; max-height: 70vh; white-space: pre; }
+pre#out .l { display: block; padding: 0 4px; border-left: 3px solid transparent; }
+pre#out .h { font-weight: 600; color: var(--accent); margin-top: 0.6em; }
+pre#out .bad { border-left-color: var(--bad); color: var(--bad); }
+pre#out .warn { border-left-color: var(--warn); color: var(--warn); }
+pre#out .info { border-left-color: var(--info); color: var(--info); }
+pre#out .good { border-left-color: var(--good); color: var(--good); }
+.src { font-size: 0.8125rem; color: var(--muted); }
+.src[data-live="true"] { color: var(--good); }
+footer { font-size: 0.875rem; color: var(--muted); max-width: 70ch; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Tool Library Lemma Toy</h1>
+    <p>The runnable example from the article on competency questions, lemmas and shapes. Four questions run as SPARQL, eight lemmas run as SHACL shapes, and the report is grouped by lemma. Edit any file and run it again.</p>
+    <span class="status" id="status" data-state="busy" role="status"><span class="dot"></span><span id="status-text">Loading the engine</span></span>
+  </header>
+
+  <div class="grid">
+    <section class="panel" aria-labelledby="files-h">
+      <div class="panel-head">
+        <h2 id="files-h">Files</h2>
+        <div class="actions">
+          <label class="today">Today <input type="date" id="today" value="2026-11-21"></label>
+          <button id="run" class="primary" disabled>Run</button>
+          <button id="reset-file" disabled>Reset this file</button>
+          <button id="reset-all" disabled>Reset all</button>
+        </div>
+      </div>
+      <div class="tabs" role="tablist" id="tabs" aria-label="Toy files"></div>
+      <textarea id="editor" spellcheck="false" aria-label="File contents"></textarea>
+      <div class="try">
+        <h2>Try an edit</h2>
+        <div class="try-row">
+          <button class="try-btn" data-edit="due">Give loan7 a due date</button>
+          <button class="try-btn" data-edit="return">Return the mitre saw</button>
+          <button class="try-btn" data-edit="value">Add the three missing values</button>
+        </div>
+        <p class="try-note" id="try-note">Each button appends facts to data.ttl and runs the toy. Watch which lemma rows change.</p>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="out-h">
+      <div class="panel-head">
+        <h2 id="out-h">Report</h2>
+        <span class="src" id="src" data-live="false">Output from the article run (CPython)</span>
+      </div>
+      <div class="legend"><span><b>BREACHED</b> MUST or MUST NOT broken</span><span><b>gap</b> SHOULD missing</span><span><b>unused</b> MAY not taken up</span><span><b>ok</b> holds</span></div>
+      <pre id="out" aria-live="polite"></pre>
+    </section>
+  </div>
+
+  <footer>
+    <p>Runs entirely in your browser with N3.js for Turtle, Comunica for SPARQL and a small SHACL validator written for this toy. The article's own output comes from rdflib 7.6.0 and pyshacl 0.40.2; this page gives the same report on the fixture and on the three edits above. The validator covers the constructs the toy's shapes use and says so when your shapes use others. Nothing you type leaves the page.</p>
+  </footer>
+</main>
+
+<script src="toy.js"></script>
+<script>
+const FILES = {"data.ttl": "@prefix tl:   <https://example.org/toollib#> .\n@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n\n# Members\ntl:memberA a tl:Member ; rdfs:label \"Member A\" .\ntl:memberB a tl:Member ; rdfs:label \"Member B\" .\ntl:memberC a tl:Member ; rdfs:label \"Member C\" .\n\n# Items\ntl:drill      a tl:Item ; rdfs:label \"Drill\"           ; tl:status tl:OnLoan    ; tl:replacementValue 90.00  ; tl:conditionNote \"New chuck, 2026\" .\ntl:ladder     a tl:Item ; rdfs:label \"Ladder\"          ; tl:status tl:OnLoan    ; tl:replacementValue 150.00 .\ntl:saw        a tl:Item ; rdfs:label \"Mitre saw\"       ; tl:status tl:Available ; tl:replacementValue 220.00 .\ntl:sander     a tl:Item ; rdfs:label \"Belt sander\"     ; tl:status tl:Withdrawn .\ntl:tilecutter a tl:Item ; rdfs:label \"Tile cutter\"     ; tl:status tl:OnLoan .\ntl:trimmer    a tl:Item ; rdfs:label \"Hedge trimmer\"   ; tl:status tl:OnLoan .\ntl:washer     a tl:Item ; rdfs:label \"Pressure washer\" ; tl:status tl:Available ; tl:replacementValue 200.00 .\n\n# Loans. A loan with no returnedDate is open.\ntl:loan1 a tl:Loan ; tl:borrower tl:memberA ; tl:item tl:drill ;      tl:dueDate \"2026-11-10\"^^xsd:date ; tl:returnedDate \"2026-11-09\"^^xsd:date .\ntl:loan2 a tl:Loan ; tl:borrower tl:memberA ; tl:item tl:ladder ;     tl:dueDate \"2026-11-05\"^^xsd:date .\ntl:loan3 a tl:Loan ; tl:borrower tl:memberB ; tl:item tl:saw ;        tl:dueDate \"2026-11-08\"^^xsd:date .\ntl:loan4 a tl:Loan ; tl:borrower tl:memberB ; tl:item tl:sander ;     tl:dueDate \"2026-12-01\"^^xsd:date .\ntl:loan5 a tl:Loan ; tl:borrower tl:memberA ; tl:item tl:tilecutter ; tl:dueDate \"2026-11-30\"^^xsd:date .\ntl:loan6 a tl:Loan ; tl:borrower tl:memberA ; tl:item tl:trimmer ;    tl:dueDate \"2026-12-01\"^^xsd:date .\ntl:loan7 a tl:Loan ; tl:borrower tl:memberC ; tl:item tl:drill .\n", "shapes.ttl": "@prefix sh:   <http://www.w3.org/ns/shacl#> .\n@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .\n@prefix owl:  <http://www.w3.org/2002/07/owl#> .\n@prefix tl:   <https://example.org/toollib#> .\n@prefix tls:  <https://example.org/toollib/shapes#> .\n\ntls: a owl:Ontology ;\n    sh:declare [ sh:prefix \"tl\" ; sh:namespace \"https://example.org/toollib#\"^^xsd:anyURI ] .\n\n# ---- Loans ------------------------------------------------------------\n\ntls:Loan a sh:NodeShape ;\n    sh:targetClass tl:Loan ;\n    sh:property tls:loan-borrower , tls:loan-item , tls:loan-due , tls:loan-returned .\n\ntls:loan-borrower a sh:PropertyShape ;\n    sh:path tl:borrower ; sh:class tl:Member ;\n    sh:minCount 1 ; sh:maxCount 1 ;\n    sh:severity sh:Violation ;\n    sh:message \"A loan must have exactly one borrower, and the borrower must be a member.\" .\n\ntls:loan-item a sh:PropertyShape ;\n    sh:path tl:item ; sh:class tl:Item ;\n    sh:minCount 1 ; sh:maxCount 1 ;\n    sh:severity sh:Violation ;\n    sh:message \"A loan must have exactly one item.\" .\n\ntls:loan-due a sh:PropertyShape ;\n    sh:path tl:dueDate ; sh:datatype xsd:date ;\n    sh:minCount 1 ; sh:maxCount 1 ;\n    sh:severity sh:Violation ;\n    sh:message \"A loan must have exactly one due date.\" .\n\ntls:loan-returned a sh:PropertyShape ;\n    sh:path tl:returnedDate ; sh:datatype xsd:date ;\n    sh:maxCount 1 ;\n    sh:severity sh:Violation ;\n    sh:message \"A loan has at most one returned date.\" .\n\n# A withdrawn item must not be on an open loan (cross-entity, so SPARQL-based).\ntls:no-open-loan-on-withdrawn a sh:NodeShape ;\n    sh:targetClass tl:Loan ;\n    sh:severity sh:Violation ;\n    sh:sparql [\n        a sh:SPARQLConstraint ;\n        sh:message \"An item that has been withdrawn must not be on an open loan.\" ;\n        sh:prefixes tls: ;\n        sh:select \"\"\"\n            SELECT $this ?value WHERE {\n                $this tl:item ?value .\n                ?value tl:status tl:Withdrawn .\n                FILTER NOT EXISTS { $this tl:returnedDate ?returned }\n            }\"\"\" ] .\n\n# ---- Members ----------------------------------------------------------\n\ntls:Member a sh:NodeShape ;\n    sh:targetClass tl:Member ;\n    sh:property tls:member-open-loan-limit .\n\ntls:member-open-loan-limit a sh:PropertyShape ;\n    sh:path [ sh:inversePath tl:borrower ] ;\n    sh:qualifiedValueShape [ sh:path tl:returnedDate ; sh:maxCount 0 ] ;\n    sh:qualifiedMaxCount 2 ;\n    sh:severity sh:Violation ;\n    sh:message \"A member may have at most two open loans.\" .\n\n# ---- Items ------------------------------------------------------------\n\ntls:Item a sh:NodeShape ;\n    sh:targetClass tl:Item ;\n    sh:property tls:item-replacement-valid , tls:item-replacement-present ,\n                tls:item-note-valid , tls:item-note-present .\n\n# An item on an open loan must not be marked Available.\ntls:no-available-with-open-loan a sh:NodeShape ;\n    sh:targetClass tl:Item ;\n    sh:severity sh:Violation ;\n    sh:sparql [\n        a sh:SPARQLConstraint ;\n        sh:message \"An item on an open loan must not have status Available.\" ;\n        sh:prefixes tls: ;\n        sh:select \"\"\"\n            SELECT $this WHERE {\n                $this tl:status tl:Available .\n                ?loan tl:item $this .\n                FILTER NOT EXISTS { ?loan tl:returnedDate ?returned }\n            }\"\"\" ] .\n\n# SHOULD: two shapes. If present, well-formed (always a Violation);\n# if absent, a Warning.\ntls:item-replacement-valid a sh:PropertyShape ;\n    sh:path tl:replacementValue ; sh:datatype xsd:decimal ; sh:maxCount 1 ;\n    sh:severity sh:Violation ;\n    sh:message \"A replacement value, when given, must be a single decimal.\" .\n\ntls:item-replacement-present a sh:PropertyShape ;\n    sh:path tl:replacementValue ; sh:minCount 1 ;\n    sh:severity sh:Warning ;\n    sh:message \"An item should have a replacement value.\" .\n\n# MAY: same split, but absence is only information.\ntls:item-note-valid a sh:PropertyShape ;\n    sh:path tl:conditionNote ; sh:datatype xsd:string ;\n    sh:severity sh:Violation ;\n    sh:message \"A condition note, when given, must be a string.\" .\n\ntls:item-note-present a sh:PropertyShape ;\n    sh:path tl:conditionNote ; sh:minCount 1 ;\n    sh:severity sh:Info ;\n    sh:message \"No condition note recorded.\" .\n", "lemmas.ttl": "@prefix lem:  <https://example.org/lemma#> .\n@prefix tls:  <https://example.org/toollib/shapes#> .\n@prefix tlcq: <https://example.org/toollib/cq#> .\n@prefix sh:   <http://www.w3.org/ns/shacl#> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n@prefix skos: <http://www.w3.org/2004/02/skos/core#> .\n\n# ---- Normative levels and the SHACL severity each implies ---------------\n\nlem:MUST    a lem:Level ; skos:notation \"MUST\"     ; lem:severity sh:Violation .\nlem:MUSTNOT a lem:Level ; skos:notation \"MUST NOT\" ; lem:severity sh:Violation .\nlem:SHOULD  a lem:Level ; skos:notation \"SHOULD\"   ; lem:severity sh:Warning .\nlem:MAY     a lem:Level ; skos:notation \"MAY\"      ; lem:severity sh:Info .\n\n# ---- Competency questions ---------------------------------------------------\n\ntlcq:CQ1 a lem:CompetencyQuestion ; rdfs:label \"Which items are on loan, and to whom?\" ;          lem:query \"cq1.rq\" .\ntlcq:CQ2 a lem:CompetencyQuestion ; rdfs:label \"Which loans are overdue today?\" ;                  lem:query \"cq2.rq\" .\ntlcq:CQ3 a lem:CompetencyQuestion ; rdfs:label \"Can this member borrow this item today?\" ;         lem:query \"cq3.rq\" .\ntlcq:CQ4 a lem:CompetencyQuestion ; rdfs:label \"What would it cost to replace each item?\" ;        lem:query \"cq4.rq\" .\n\n# ---- Lemmas -----------------------------------------------------------------\n# enforcedBy = the shape whose severity must agree with the level.\n# guardedBy  = the always-a-Violation \"if present, well-formed\" shape.\n\nlem:L1 a lem:Lemma ; lem:level lem:MUST ;\n    lem:text \"Every loan has exactly one borrower, who is a member, and exactly one item.\" ;\n    lem:fromQuestion tlcq:CQ1 ;\n    lem:enforcedBy tls:loan-borrower , tls:loan-item ;\n    lem:status lem:Accepted ; lem:origin lem:LLMProposed .\n\nlem:L2 a lem:Lemma ; lem:level lem:MUST ;\n    lem:text \"Every loan has exactly one due date.\" ;\n    lem:fromQuestion tlcq:CQ2 ;\n    lem:enforcedBy tls:loan-due ;\n    lem:status lem:Accepted ; lem:origin lem:LLMProposed .\n\nlem:L3 a lem:Lemma ; lem:level lem:MUST ;\n    lem:text \"A loan has at most one returned date; a loan with none is open.\" ;\n    lem:fromQuestion tlcq:CQ1 , tlcq:CQ2 ;\n    lem:enforcedBy tls:loan-returned ;\n    lem:status lem:Accepted ; lem:origin lem:LLMProposed .\n\nlem:L4 a lem:Lemma ; lem:level lem:MUSTNOT ;\n    lem:text \"An item that has been withdrawn is not on an open loan.\" ;\n    lem:fromQuestion tlcq:CQ3 ;\n    lem:enforcedBy tls:no-open-loan-on-withdrawn ;\n    lem:status lem:Accepted ; lem:origin lem:LLMProposed .\n\nlem:L5 a lem:Lemma ; lem:level lem:MUSTNOT ;\n    lem:text \"An item on an open loan does not have status Available.\" ;\n    lem:fromQuestion tlcq:CQ3 ;\n    lem:raisedByFailureOf tlcq:CQ2 ;\n    lem:enforcedBy tls:no-available-with-open-loan ;\n    lem:status lem:Accepted ; lem:origin lem:LLMProposed .\n\nlem:L6 a lem:Lemma ; lem:level lem:MUSTNOT ;\n    lem:text \"A member does not have more than two open loans.\" ;\n    lem:fromQuestion tlcq:CQ3 ;\n    lem:enforcedBy tls:member-open-loan-limit ;\n    lem:status lem:Accepted ; lem:origin lem:LLMProposed .\n\nlem:L7 a lem:Lemma ; lem:level lem:SHOULD ;\n    lem:text \"Every item has a replacement value.\" ;\n    lem:fromQuestion tlcq:CQ4 ;\n    lem:enforcedBy tls:item-replacement-present ;\n    lem:guardedBy  tls:item-replacement-valid ;\n    lem:status lem:Accepted ; lem:origin lem:LLMProposed .\n\nlem:L8 a lem:Lemma ; lem:level lem:MAY ;\n    lem:text \"An item may carry a condition note.\" ;\n    lem:enforcedBy tls:item-note-present ;\n    lem:guardedBy  tls:item-note-valid ;\n    lem:status lem:Accepted ; lem:origin lem:Authored .\n", "queries/cq1.rq": "PREFIX tl: <https://example.org/toollib#>\nSELECT ?item ?member WHERE {\n  ?loan a tl:Loan ; tl:item ?item ; tl:borrower ?member .\n  FILTER NOT EXISTS { ?loan tl:returnedDate ?returned }\n}\nORDER BY ?item\n", "queries/cq2.rq": "PREFIX tl:  <https://example.org/toollib#>\nPREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\nSELECT ?loan ?item ?due WHERE {\n  ?loan a tl:Loan ; tl:item ?item ; tl:dueDate ?due .\n  FILTER NOT EXISTS { ?loan tl:returnedDate ?returned }\n  FILTER (?due < \"{{today}}\"^^xsd:date)\n}\nORDER BY ?due\n", "queries/cq3.rq": "PREFIX tl: <https://example.org/toollib#>\nASK {\n  BIND(IRI(\"{{item}}\") AS ?item)\n  ?item tl:status ?status .\n  FILTER (?status != tl:Withdrawn)\n  FILTER NOT EXISTS {\n    ?loan tl:item ?item .\n    FILTER NOT EXISTS { ?loan tl:returnedDate ?returned }\n  }\n  { SELECT (COUNT(?open) AS ?n) WHERE {\n      BIND(IRI(\"{{member}}\") AS ?m)\n      ?open tl:borrower ?m .\n      FILTER NOT EXISTS { ?open tl:returnedDate ?r }\n  } }\n  FILTER (?n < 2)\n}\n", "queries/cq4.rq": "PREFIX tl: <https://example.org/toollib#>\nSELECT ?item ?value WHERE {\n  ?item a tl:Item .\n  OPTIONAL { ?item tl:replacementValue ?value }\n}\nORDER BY ?item\n", "candidate-extracted.ttl": "@prefix tl: <https://example.org/toollib#> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n\ntl:mower a tl:Item ; rdfs:label \"Lawn mower\" ; tl:status tl:Available ; tl:replacementValue \"about 150\" .\n", "candidate-corrected.ttl": "@prefix tl: <https://example.org/toollib#> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n\ntl:mower a tl:Item ; rdfs:label \"Lawn mower\" ; tl:status tl:Available ; tl:replacementValue 150.00 .\n"};
+const REFERENCE = "== 1. Competency questions on the fixture ==\nCQ1 on loan: 6 open loans -> drill/memberC, ladder/memberA, sander/memberB, saw/memberB, tilecutter/memberA, trimmer/memberA\nCQ2 overdue on 2026-11-21: 2 -> loan2 (due 2026-11-05), loan3 (due 2026-11-08)\nCQ3 can memberC borrow washer? True\nCQ3 can memberA borrow washer? False\nCQ3 can memberC borrow sander? False\nCQ3 can memberC borrow saw? False\nCQ4 replacement cost: answerable for 4 of 7 items\n\n== 2. Lemma conformance (SHACL report grouped by lemma) ==\nlemma  level     Violation  Warning  Info  verdict\nL1     MUST              0        0     0  ok\nL2     MUST              1        0     0  BREACHED\nL3     MUST              0        0     0  ok\nL4     MUST NOT          1        0     0  BREACHED\nL5     MUST NOT          1        0     0  BREACHED\nL6     MUST NOT          1        0     0  BREACHED\nL7     SHOULD            0        3     0  gap (3 items)\nL8     MAY               0        0     6  unused by 6 items\n\n== 3. Lemma-layer lints ==\n  level/severity agreement: ok\n  lemmas with no question behind them: ['L8']\n\n== 4. Candidate assertions: validate before promotion ==\n  candidate extracted 'about 150': REJECTED (mower breaks L7)\n  candidate corrected 150.00: promoted; accepted graph now holds 64 triples\n";
+const ORDER = ["data.ttl", "shapes.ttl", "lemmas.ttl", "queries/cq1.rq", "queries/cq2.rq", "queries/cq3.rq", "queries/cq4.rq", "candidate-extracted.ttl", "candidate-corrected.ttl"];
+const EDITS = {
+  due: { text: 'tl:loan7 tl:dueDate "2026-12-05"^^xsd:date .', note: "Loan7 now has a due date, so the L2 row should clear." },
+  "return": { text: 'tl:loan3 tl:returnedDate "2026-11-20"^^xsd:date .', note: "The saw's loan is closed, so L5 should clear, CQ2 should lose loan3 and CQ3 should let memberC borrow the saw." },
+  value: { text: 'tl:tilecutter tl:replacementValue 180.00 .\ntl:trimmer tl:replacementValue 95.00 .\ntl:sander tl:replacementValue 120.00 .', note: "All seven items now carry a replacement value, so L7 should clear and CQ4 should answer for every item." }
+};
+
+const $ = (id) => document.getElementById(id);
+const state = { files: JSON.parse(JSON.stringify(FILES)), current: ORDER[0], py: null, running: false };
+
+function setStatus(kind, text) {
+  $("status").dataset.state = kind;
+  $("status-text").textContent = text;
+}
+
+function classify(line) {
+  if (/^==/.test(line)) return "h";
+  if (/BREACHED|REJECTED|mismatch|Error|Traceback/.test(line)) return "bad";
+  if (/\bgap \(/.test(line)) return "warn";
+  if (/unused by/.test(line)) return "info";
+  if (/\bok$|promoted/.test(line)) return "good";
+  return "";
+}
+
+function renderOutput(text) {
+  const out = $("out");
+  out.textContent = "";
+  for (const line of text.replace(/\n+$/, "").split("\n")) {
+    const span = document.createElement("span");
+    span.className = ("l " + classify(line)).trim();
+    span.textContent = line === "" ? " " : line;
+    out.appendChild(span);
+  }
+}
+
+function renderTabs() {
+  const tabs = $("tabs");
+  tabs.textContent = "";
+  for (const name of ORDER) {
+    const b = document.createElement("button");
+    b.className = "tab";
+    b.type = "button";
+    b.id = "tab-" + name.replace(/[^a-z0-9]/gi, "-");
+    b.setAttribute("role", "tab");
+    b.setAttribute("aria-selected", String(name === state.current));
+    b.dataset.dirty = String(state.files[name] !== FILES[name]);
+    b.textContent = name.replace("queries/", "");
+    b.addEventListener("click", () => selectFile(name));
+    tabs.appendChild(b);
+  }
+}
+
+function selectFile(name) {
+  state.files[state.current] = $("editor").value;
+  state.current = name;
+  $("editor").value = state.files[name];
+  renderTabs();
+}
+
+function syncEditor() {
+  state.files[state.current] = $("editor").value;
+  renderTabs();
+}
+
+function boot() {
+  if (typeof ToyEngine === "undefined" || typeof ToyEngine.runToy !== "function") {
+    setStatus("error", "The engine did not load");
+    renderOutput("The script toy.js did not load in this page, so nothing can run here.\n\nThe report on this page is the output from the article run.");
+    return;
+  }
+  setStatus("ready", "Ready");
+  for (const id of ["run", "reset-file", "reset-all"]) $(id).disabled = false;
+}
+
+async function run() {
+  if (state.running) return;
+  state.running = true;
+  $("run").disabled = true;
+  setStatus("busy", "Running");
+  state.files[state.current] = $("editor").value;
+  await new Promise((r) => setTimeout(r, 30));
+  const t0 = performance.now();
+  let lines;
+  try {
+    lines = await ToyEngine.runToy(Object.assign({ __defaults: FILES }, state.files), $("today").value || "2026-11-21");
+  } catch (err) {
+    lines = ["Run stopped with an error:", String(err && err.message ? err.message : err)];
+  }
+  const ms = Math.round(performance.now() - t0);
+  renderOutput(lines.join("\n"));
+  $("src").textContent = "Live output from your files (" + ms + " ms)";
+  $("src").dataset.live = "true";
+  setStatus("ready", "Ready. Last run took " + ms + " ms");
+  state.running = false;
+  $("run").disabled = false;
+}
+
+$("editor").addEventListener("input", syncEditor);
+$("run").addEventListener("click", run);
+$("reset-file").addEventListener("click", () => { state.files[state.current] = FILES[state.current]; $("editor").value = FILES[state.current]; renderTabs(); });
+$("reset-all").addEventListener("click", () => { state.files = JSON.parse(JSON.stringify(FILES)); $("editor").value = state.files[state.current]; renderTabs(); $("try-note").textContent = "Each button appends facts to data.ttl and runs the toy. Watch which lemma rows change."; });
+for (const b of document.querySelectorAll(".try-btn")) {
+  b.addEventListener("click", async () => {
+    const edit = EDITS[b.dataset.edit];
+    if (state.current !== "data.ttl") selectFile("data.ttl");
+    const ed = $("editor");
+    if (!ed.value.includes(edit.text)) ed.value = ed.value.replace(/\s*$/, "\n") + edit.text + "\n";
+    syncEditor();
+    $("try-note").textContent = edit.note;
+    await run();
+  });
+}
+
+$("editor").value = state.files[state.current];
+renderTabs();
+renderOutput(REFERENCE);
+boot();
+</script>
+</body>
+</html>

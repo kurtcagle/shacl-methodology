@@ -1,0 +1,16 @@
+PREFIX tl: <https://example.org/toollib#>
+ASK {
+  BIND(IRI("{{item}}") AS ?item)
+  ?item tl:status ?status .
+  FILTER (?status != tl:Withdrawn)
+  FILTER NOT EXISTS {
+    ?loan tl:item ?item .
+    FILTER NOT EXISTS { ?loan tl:returnedDate ?returned }
+  }
+  { SELECT (COUNT(?open) AS ?n) WHERE {
+      BIND(IRI("{{member}}") AS ?m)
+      ?open tl:borrower ?m .
+      FILTER NOT EXISTS { ?open tl:returnedDate ?r }
+  } }
+  FILTER (?n < 2)
+}

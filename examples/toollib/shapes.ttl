@@ -1,0 +1,111 @@
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix tl:   <https://example.org/toollib#> .
+@prefix tls:  <https://example.org/toollib/shapes#> .
+
+tls: a owl:Ontology ;
+    sh:declare [ sh:prefix "tl" ; sh:namespace "https://example.org/toollib#"^^xsd:anyURI ] .
+
+# ---- Loans ------------------------------------------------------------
+
+tls:Loan a sh:NodeShape ;
+    sh:targetClass tl:Loan ;
+    sh:property tls:loan-borrower , tls:loan-item , tls:loan-due , tls:loan-returned .
+
+tls:loan-borrower a sh:PropertyShape ;
+    sh:path tl:borrower ; sh:class tl:Member ;
+    sh:minCount 1 ; sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:message "A loan must have exactly one borrower, and the borrower must be a member." .
+
+tls:loan-item a sh:PropertyShape ;
+    sh:path tl:item ; sh:class tl:Item ;
+    sh:minCount 1 ; sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:message "A loan must have exactly one item." .
+
+tls:loan-due a sh:PropertyShape ;
+    sh:path tl:dueDate ; sh:datatype xsd:date ;
+    sh:minCount 1 ; sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:message "A loan must have exactly one due date." .
+
+tls:loan-returned a sh:PropertyShape ;
+    sh:path tl:returnedDate ; sh:datatype xsd:date ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:message "A loan has at most one returned date." .
+
+# A withdrawn item must not be on an open loan (cross-entity, so SPARQL-based).
+tls:no-open-loan-on-withdrawn a sh:NodeShape ;
+    sh:targetClass tl:Loan ;
+    sh:severity sh:Violation ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:message "An item that has been withdrawn must not be on an open loan." ;
+        sh:prefixes tls: ;
+        sh:select """
+            SELECT $this ?value WHERE {
+                $this tl:item ?value .
+                ?value tl:status tl:Withdrawn .
+                FILTER NOT EXISTS { $this tl:returnedDate ?returned }
+            }""" ] .
+
+# ---- Members ----------------------------------------------------------
+
+tls:Member a sh:NodeShape ;
+    sh:targetClass tl:Member ;
+    sh:property tls:member-open-loan-limit .
+
+tls:member-open-loan-limit a sh:PropertyShape ;
+    sh:path [ sh:inversePath tl:borrower ] ;
+    sh:qualifiedValueShape [ sh:path tl:returnedDate ; sh:maxCount 0 ] ;
+    sh:qualifiedMaxCount 2 ;
+    sh:severity sh:Violation ;
+    sh:message "A member may have at most two open loans." .
+
+# ---- Items ------------------------------------------------------------
+
+tls:Item a sh:NodeShape ;
+    sh:targetClass tl:Item ;
+    sh:property tls:item-replacement-valid , tls:item-replacement-present ,
+                tls:item-note-valid , tls:item-note-present .
+
+# An item on an open loan must not be marked Available.
+tls:no-available-with-open-loan a sh:NodeShape ;
+    sh:targetClass tl:Item ;
+    sh:severity sh:Violation ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:message "An item on an open loan must not have status Available." ;
+        sh:prefixes tls: ;
+        sh:select """
+            SELECT $this WHERE {
+                $this tl:status tl:Available .
+                ?loan tl:item $this .
+                FILTER NOT EXISTS { ?loan tl:returnedDate ?returned }
+            }""" ] .
+
+# SHOULD: two shapes. If present, well-formed (always a Violation);
+# if absent, a Warning.
+tls:item-replacement-valid a sh:PropertyShape ;
+    sh:path tl:replacementValue ; sh:datatype xsd:decimal ; sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:message "A replacement value, when given, must be a single decimal." .
+
+tls:item-replacement-present a sh:PropertyShape ;
+    sh:path tl:replacementValue ; sh:minCount 1 ;
+    sh:severity sh:Warning ;
+    sh:message "An item should have a replacement value." .
+
+# MAY: same split, but absence is only information.
+tls:item-note-valid a sh:PropertyShape ;
+    sh:path tl:conditionNote ; sh:datatype xsd:string ;
+    sh:severity sh:Violation ;
+    sh:message "A condition note, when given, must be a string." .
+
+tls:item-note-present a sh:PropertyShape ;
+    sh:path tl:conditionNote ; sh:minCount 1 ;
+    sh:severity sh:Info ;
+    sh:message "No condition note recorded." .

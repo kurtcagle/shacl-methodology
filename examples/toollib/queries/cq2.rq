@@ -1,0 +1,8 @@
+PREFIX tl:  <https://example.org/toollib#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?loan ?item ?due WHERE {
+  ?loan a tl:Loan ; tl:item ?item ; tl:dueDate ?due .
+  FILTER NOT EXISTS { ?loan tl:returnedDate ?returned }
+  FILTER (?due < "{{today}}"^^xsd:date)
+}
+ORDER BY ?due

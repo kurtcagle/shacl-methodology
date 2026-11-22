@@ -37,6 +37,9 @@ shacl-methodology/
 │   ├── shacl_methodology_v2.md        ← Full methodology (Markdown)
 │   ├── shacl_methodology_v2.docx      ← Full methodology (Word)
 │   └── shacl_methodology_v2.pdf       ← Full methodology (PDF)
+├── examples/
+│   ├── edutrainer/                    ← Worked example: ontology, shapes, competency queries
+│   └── toollib/                       ← Competency questions, levelled lemmas and shapes (Python + browser)
 └── diagrams/
     ├── README.md                      ← Diagram guide
     ├── 01_design_cycle.mmd            ← The iterative design cycle

@@ -1,0 +1,6 @@
+PREFIX tl: <https://example.org/toollib#>
+SELECT ?item ?value WHERE {
+  ?item a tl:Item .
+  OPTIONAL { ?item tl:replacementValue ?value }
+}
+ORDER BY ?item

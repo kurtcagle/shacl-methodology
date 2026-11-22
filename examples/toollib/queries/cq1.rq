@@ -1,0 +1,6 @@
+PREFIX tl: <https://example.org/toollib#>
+SELECT ?item ?member WHERE {
+  ?loan a tl:Loan ; tl:item ?item ; tl:borrower ?member .
+  FILTER NOT EXISTS { ?loan tl:returnedDate ?returned }
+}
+ORDER BY ?item
